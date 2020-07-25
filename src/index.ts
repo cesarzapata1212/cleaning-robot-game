@@ -65,7 +65,7 @@ function play(delta: number) {
 	robotPositionLabel.text = `Position: X=${robot.x}, Y=${robot.y}`
 }
 
-class Robot {
+export class Robot {
 
 	private _sprite: PIXI.Sprite
 	private _speedX: number

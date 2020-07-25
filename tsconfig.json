@@ -1,5 +1,5 @@
 {
-  "compilerOptions": { 
+  "compilerOptions": {
     "target": "es5",
     "module": "commonjs",
     "rootDir": "./src",
@@ -8,5 +8,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
+    "baseUrl": "./src",
+    "paths": {
+      "./*": ["./src/*"]
+    },
   }
 }
