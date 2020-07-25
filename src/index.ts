@@ -37,7 +37,6 @@ function setup(): void {
 	speedLabel.style.fill = "white"
 	app.stage.addChild(speedLabel)
 
-
 	robotPositionLabel = new Text("Position: X=0, Y=0")
 	robotPositionLabel.x = 25
 	robotPositionLabel.y = 55
@@ -66,64 +65,25 @@ function play(delta: number) {
 	robotPositionLabel.text = `Position: X=${robot.x}, Y=${robot.y}`
 }
 
-class Keyboard {
-	value: string
-	isDown: boolean
-	isUp: boolean
-	press!: Function
-	release!: Function
-
-	constructor(value: string) {
-		this.value = value
-		this.isDown = false
-		this.isUp = true
-		window.addEventListener("keydown", this.downHandler.bind(this), false)
-		window.addEventListener("keyup", this.upHandler.bind(this), false)
-	}
-
-	downHandler(event: KeyboardEvent): void {
-		if (event.key === this.value) {
-			if (this.isUp && this.press) this.press()
-			this.isDown = true
-			this.isUp = false
-			event.preventDefault()
-		}
-	}
-
-	upHandler(event: KeyboardEvent): void {
-		if (event.key === this.value) {
-			if (this.isDown && this.release) this.release()
-			this.isDown = false
-			this.isUp = true
-			event.preventDefault()
-		}
-	}
-
-	unsubscribe(): void {
-		window.removeEventListener("keydown", this.downHandler)
-		window.removeEventListener("keyup", this.upHandler)
-	}
-}
-
 class Robot {
 
-	private sprite: PIXI.Sprite
+	private _sprite: PIXI.Sprite
 	private _speed: number
 
 	constructor() {
 		this._speed = 5
-		this.sprite = Sprite.from(resources['./assets/logo.png'].texture)
-		this.sprite.anchor.set(0.5)
-		this.sprite.x = app.screen.width * 0.5
-		this.sprite.y = app.screen.height * 0.5
-		app.stage.addChild(this.sprite)
+		this._sprite = Sprite.from(resources['./assets/logo.png'].texture)
+		this._sprite.anchor.set(0.5)
+		this._sprite.x = app.screen.width * 0.5
+		this._sprite.y = app.screen.height * 0.5
+		app.stage.addChild(this._sprite)
 	}
 
 	onObstacleDetected(): void {
-		if (this._speed == 5 && this.sprite.x > (app.screen.width - this.sprite.width)) {
+		if (this._speed == 5 && this._sprite.x > (app.screen.width - this._sprite.width)) {
 			this.changeDirection();
 		}
-		if (this._speed == -5 && this.sprite.x < this.sprite.width) {
+		if (this._speed == -5 && this._sprite.x < this._sprite.width) {
 			this.changeDirection();
 		}
 	}
@@ -131,7 +91,7 @@ class Robot {
 	changeDirection(): void {
 		if (this._speed == 5) {
 			// this.sprite.rotation += 0.5
-			this.sprite.pivot.x += 0.5
+			this._sprite.pivot.x += 0.5
 			this._speed = -5
 		} else if (this._speed == -5) {
 			this._speed = 5
@@ -139,7 +99,7 @@ class Robot {
 	}
 
 	move(): void {
-		this.sprite.x += this._speed
+		this._sprite.x += this._speed
 	}
 
 	isStuck(): boolean {
@@ -151,10 +111,10 @@ class Robot {
 	}
 
 	get x(): number {
-		return this.sprite.x
+		return this._sprite.x
 	}
 
 	get y(): number {
-		return this.sprite.y
+		return this._sprite.y
 	}
 }
