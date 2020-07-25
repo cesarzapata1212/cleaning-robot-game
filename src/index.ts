@@ -61,17 +61,19 @@ function play(delta: number) {
 
 	robot.move()
 
-	speedLabel.text = `Speed:  ${robot.speed.toString()}`
+	speedLabel.text = `Speed:  ${robot.speedX.toString()}`
 	robotPositionLabel.text = `Position: X=${robot.x}, Y=${robot.y}`
 }
 
 class Robot {
 
 	private _sprite: PIXI.Sprite
-	private _speed: number
+	private _speedX: number
+	private _speedY: number
 
 	constructor() {
-		this._speed = 5
+		this._speedX = 5
+		this._speedY = 5
 		this._sprite = Sprite.from(resources['./assets/logo.png'].texture)
 		this._sprite.anchor.set(0.5)
 		this._sprite.x = app.screen.width * 0.5
@@ -80,34 +82,37 @@ class Robot {
 	}
 
 	onObstacleDetected(): void {
-		if (this._speed == 5 && this._sprite.x > (app.screen.width - this._sprite.width)) {
-			this.changeDirection();
-		}
-		if (this._speed == -5 && this._sprite.x < this._sprite.width) {
+		if ((this._sprite.x > (app.screen.width - this._sprite.width) || this._sprite.x < 0) ||
+			(this._sprite.y > (app.screen.height - this._sprite.height) || this._sprite.y < 0)) {
 			this.changeDirection();
 		}
 	}
 
 	changeDirection(): void {
-		if (this._speed == 5) {
-			// this.sprite.rotation += 0.5
-			this._sprite.pivot.x += 0.5
-			this._speed = -5
-		} else if (this._speed == -5) {
-			this._speed = 5
+		this._sprite.rotation += 0.5
+		if (this._speedX == 5) {
+			this._speedX = -5
+		} else if (this._speedX == -5) {
+			this._speedX = 5
+		}
+		if (this._speedY == 5) {
+			this._speedY = -5
+		} else if (this._speedY == -5) {
+			this._speedY = 5
 		}
 	}
 
 	move(): void {
-		this._sprite.x += this._speed
+		this._sprite.x += this._speedX
+		this._sprite.y += this._speedY
 	}
 
 	isStuck(): boolean {
 		return false
 	}
 
-	get speed(): number {
-		return this._speed
+	get speedX(): number {
+		return this._speedX
 	}
 
 	get x(): number {
