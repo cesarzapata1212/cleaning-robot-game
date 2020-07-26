@@ -7,9 +7,9 @@ module.exports = {
 	module: {
 		rules: [
 			{
-				test: /\.tsx?$/,
+				test: /\.(ts|tsx)?$/,
 				use: 'ts-loader',
-				exclude: /node_modules/,
+				exclude: /node_modules/
 			}
 		],
 	},
@@ -25,7 +25,7 @@ module.exports = {
 		contentBase: 'dist',
 		port: 3000
 	},
-	devtool: 'inline-source-map',
+	devtool: 'source-map',
 	plugins: [
 		new CopyWebpackPlugin([{
 			from: 'build/assets',

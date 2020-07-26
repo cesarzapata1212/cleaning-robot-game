@@ -1,6 +1,6 @@
 import 'jest'
 
-import { Robot, Position, Angle, AngleValueError } from 'app/robot'
+import { Robot, Position, Angle, AngleValueError } from '../src/Robot'
 
 
 describe('robot module', () => {
@@ -89,6 +89,14 @@ describe('robot module', () => {
             expect(new Angle(359).degrees()).toEqual(359)
             expect(new Angle(360).degrees()).toEqual(360)
             expect(() => new Angle(361)).toThrow(new AngleValueError(361))
+        });
+
+        test('should add degrees to the angle', () => {
+            expect(new Angle(0).add(10).degreed()).toEqual(10)
+        });
+
+        test('should return rotation', () => {
+            expect(new Angle(0).rotation()).toEqual(0)
         });
     })
 })

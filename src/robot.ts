@@ -17,14 +17,15 @@ export class Robot {
     onObstacleDetected(): void {
     }
 
-    changeDirection(): void {
+    changeDirection(angle: Angle): void {
+        this._direction = angle
     }
 
     move(): void {
         this._speed = this.SPEED_DEFAULT
         let rotation = this._direction.degrees() * Math.PI / 180
         let vx = this._position.x + this._speed * Math.cos(rotation)
-        let vy = this._position.x + this._speed * Math.sin(rotation)
+        let vy = this._position.y + this._speed * Math.sin(rotation)
         this._position = new Position(vx, vy)
     }
 
@@ -69,8 +70,9 @@ export class Position {
 }
 
 export class Angle {
-
+    
     public static FORWARD: Angle = new Angle(0)
+    public static MAX: Angle = new Angle(360)
 
     private _value: number
 
@@ -88,6 +90,11 @@ export class Angle {
     degrees(): number {
         return this._value
     }
+
+    add(degrees: number): Angle {
+        return new Angle(this._value + degrees)
+    }
+
 }
 
 export class AngleValueError extends Error {

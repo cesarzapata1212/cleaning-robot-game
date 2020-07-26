@@ -1,15 +1,14 @@
 import * as PIXI from 'pixi.js'
-
+import { Robot, Angle, Position } from './Robot'
 
 const Application = PIXI.Application
 const Sprite = PIXI.Sprite
 const Text = PIXI.Text
 
 let state: Function
-let speed: number = 5
 let speedLabel: PIXI.Text
 let robotPositionLabel: PIXI.Text
-let robot: Robot
+let robot: PixiRobot
 
 const app = new Application({
 	width: window.innerWidth,
@@ -29,7 +28,7 @@ loader
 	.load(setup)
 
 function setup(): void {
-	robot = new Robot()
+	robot = new PixiRobot(new Robot(new Position(150, 150)))
 
 	speedLabel = new Text("Speed: 0")
 	speedLabel.x = 25
@@ -61,23 +60,20 @@ function play(delta: number) {
 
 	robot.move()
 
-	speedLabel.text = `Speed:  ${robot.speedX.toString()}`
 	robotPositionLabel.text = `Position: X=${robot.x}, Y=${robot.y}`
 }
 
-export class Robot {
+export class PixiRobot {
 
 	private _sprite: PIXI.Sprite
-	private _speedX: number
-	private _speedY: number
+	private _robot: Robot
 
-	constructor() {
-		this._speedX = 5
-		this._speedY = 5
+	constructor(robot: Robot) {
+		this._robot = robot
 		this._sprite = Sprite.from(resources['./assets/logo.png'].texture)
 		this._sprite.anchor.set(0.5)
-		this._sprite.x = app.screen.width * 0.5
-		this._sprite.y = app.screen.height * 0.5
+		this._sprite.x = robot.x
+		this._sprite.y = robot.y
 		app.stage.addChild(this._sprite)
 	}
 
@@ -85,41 +81,33 @@ export class Robot {
 		if ((this._sprite.x > (app.screen.width - this._sprite.width) || this._sprite.x < 0) ||
 			(this._sprite.y > (app.screen.height - this._sprite.height) || this._sprite.y < 0)) {
 			this.changeDirection();
+			this._robot
 		}
 	}
 
 	changeDirection(): void {
-		this._sprite.rotation += 0.5
-		if (this._speedX == 5) {
-			this._speedX = -5
-		} else if (this._speedX == -5) {
-			this._speedX = 5
-		}
-		if (this._speedY == 5) {
-			this._speedY = -5
-		} else if (this._speedY == -5) {
-			this._speedY = 5
+		if (this._robot.direction.degrees() + 90 > Angle.MAX.degrees()) {
+			this._robot.changeDirection(new Angle(0))
+		} else {
+			this._robot.changeDirection(this._robot.direction.add(90))
 		}
 	}
 
 	move(): void {
-		this._sprite.x += this._speedX
-		this._sprite.y += this._speedY
+		this._robot.move()
+		this._sprite.x = this._robot.x
+		this._sprite.y = this._robot.y
 	}
 
 	isStuck(): boolean {
 		return false
 	}
 
-	get speedX(): number {
-		return this._speedX
-	}
-
 	get x(): number {
-		return this._sprite.x
+		return this._robot.x
 	}
 
 	get y(): number {
-		return this._sprite.y
+		return this._robot.y
 	}
 }
