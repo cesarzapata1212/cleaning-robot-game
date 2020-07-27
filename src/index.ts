@@ -86,10 +86,10 @@ export class PixiRobot {
 	}
 
 	changeDirection(): void {
-		if (this._robot.direction.degrees() + 90 > Angle.MAX.degrees()) {
+		if (this._robot.direction.degrees() + 90 > Angle.MAX.) {
 			this._robot.changeDirection(new Angle(0))
 		} else {
-			this._robot.changeDirection(this._robot.direction.add(90))
+			this._robot.direction.add(90)
 		}
 	}
 
