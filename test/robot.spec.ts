@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals'
 
 import { Robot, Position, Angle, AngleValueError } from '../src/Robot'
-import { Level, Square } from '../src/Level'
+import { Level, Rectangle } from '../src/Level'
 
 
 describe('robot module', () => {
@@ -67,19 +67,74 @@ describe('robot module', () => {
                 expect(robot.y).toEqual(3.55)
             });
 
-            test('should detect obstacles', () => {
-                let dimentions = new Square(300, 300)
-                let level = new Level(dimentions)
-                let robot = new Robot(new Position(295, 0), new Angle(0))
+            test('should not change position when obstacle is detected', () => {
+                let level = new Level(new Rectangle(300, 400))
+                let robot = new Robot(new Position(299, 399), new Angle(45))
                 level.addObject(robot)
                 let expected = jest.fn()
-                    
                 robot.onObstacleDetected(expected)
 
-                // at Angle(0), the X pivot should move from 295 to 300, which will colide with the side wall
                 robot.move()
 
                 expect(expected).toHaveBeenCalled()
+                expect(robot.x).toEqual(299)
+                expect(robot.y).toEqual(399)
+            });
+
+            describe('collision detection', () => {
+                const width = 800
+                const height = 600
+                const centerWidth = width / 2
+                const centerHeight = height / 2
+                let level,
+                    robot: Robot,
+                    radiusOutline: number,
+                    expected: Function
+
+                beforeEach(() => {
+                    level = new Level(new Rectangle(width, height))
+                    robot = new Robot()
+                    radiusOutline = robot.radius() + 1
+                    level.addObject(robot)
+                    expected = jest.fn()
+                    robot.onObstacleDetected(expected)
+                })
+
+                it('should detect right wall', () => {
+                    robot.position = new Position(width - radiusOutline, centerHeight)
+                    robot.direction = Angle.TOWARDS_RIGHT
+
+                    robot.move()
+
+                    expect(expected).toHaveBeenCalled()
+                });
+
+                it('should detect bottom wall', () => {
+                    robot.position = new Position(centerWidth, height - radiusOutline)
+                    robot.direction = Angle.TOWARDS_BOTTOM
+
+                    robot.move()
+
+                    expect(expected).toHaveBeenCalled()
+                });
+
+                it('should detect left wall', () => {
+                    robot.position = new Position(radiusOutline, centerHeight)
+                    robot.direction = Angle.TOWARDS_LEFT
+
+                    robot.move()
+
+                    expect(expected).toHaveBeenCalled()
+                });
+
+                test('should detect top wall', () => {
+                    robot.position = new Position(centerWidth, radiusOutline)
+                    robot.direction = Angle.TOWARDS_TOP
+
+                    robot.move()
+
+                    expect(expected).toHaveBeenCalled()
+                });
             });
         });
     })

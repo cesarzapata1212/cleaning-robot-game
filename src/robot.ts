@@ -1,6 +1,7 @@
-import { Level } from "Level"
+let Intersects = require('intersects')
 
-import { LevelObject } from './Level'
+import { Level, LevelObject, Rectangle } from './Level'
+
 
 export class Robot implements LevelObject {
 
@@ -9,6 +10,7 @@ export class Robot implements LevelObject {
     private _speed: number
     private _level?: Level
     private _onObstacleDetected?: Function
+    private _size: number
 
     private readonly STOPPED_SPEED = 0
     private readonly DEFAULT_SPEED = 5
@@ -17,6 +19,7 @@ export class Robot implements LevelObject {
         this._position = position || new Position(0, 0)
         this._direction = direction || new Angle(0)
         this._speed = this.STOPPED_SPEED
+        this._size = 100
     }
 
     setLevel(level: Level): void {
@@ -24,7 +27,7 @@ export class Robot implements LevelObject {
     }
 
     onObstacleDetected(fun: Function): void {
-        this._onObstacleDetected = fun.bind(this)
+        this._onObstacleDetected = fun
     }
 
     changeDirection(angle: Angle): void {
@@ -33,14 +36,56 @@ export class Robot implements LevelObject {
 
     move(): void {
         this._speed = this.DEFAULT_SPEED
-        this._position.x = this.nextPositionX()
-        this._position.y = this.nextPositionY()
-        if (this._onObstacleDetected) {
-            this._onObstacleDetected()
+
+        if (this.isInCollisionCourse()) {
+            this._onObstacleDetected?.()
+        } else {
+            this._position.x = this.nextPositionX()
+            this._position.y = this.nextPositionY()
         }
     }
 
-    isStuck(): boolean {
+    radius() {
+        return this._size / 2
+    }
+
+    private isInCollisionCourse(): boolean {
+        if (this._level) {
+
+            let points = this._level.shape.points()
+
+            for (let i = 0; i < points.length - 1; i++) {
+                const point = points[i];
+                const nexxtPoint = points[i + 1];
+                let x1 = point.x,
+                    y1 = point.y,
+                    x2 = nexxtPoint.x,
+                    y2 = nexxtPoint.y,
+                    xc = this.nextPositionX(),
+                    yc = this.nextPositionY(),
+                    rc = this.radius()
+
+                if (Intersects.circleLine(xc, yc, rc, x1, y1, x2, y2)) {
+                    return true;
+                }
+            }
+
+            let firstNode = points[0]
+            let closingNode = points[points.length - 1]
+            let x1 = firstNode.x,
+            y1 = firstNode.y,
+            x2 = closingNode.x,
+            y2 = closingNode.y,
+            xc = this.nextPositionX(),
+            yc = this.nextPositionY(),
+            rc = this.radius()
+
+            if (Intersects.circleLine(xc, yc, rc, x1, y1, x2, y2)) {
+                return true;
+            }
+
+        }
+
         return false
     }
 
@@ -71,6 +116,19 @@ export class Robot implements LevelObject {
     get direction(): Angle {
         return this._direction
     }
+
+    set direction(direction: Angle) {
+        this._direction = direction
+    }
+
+    set size(size: number) {
+        this._size = size
+    }
+
+    set position(position: Position) {
+        this._position = position
+    }
+
 }
 
 export class Position {
@@ -87,7 +145,6 @@ export class Position {
         return this._x
     }
 
-
     set x(x: number) {
         this._x = x
     }
@@ -95,7 +152,6 @@ export class Position {
     get y(): number {
         return this._y
     }
-
 
     set y(y: number) {
         this._y = y
@@ -108,6 +164,10 @@ export class Angle {
     public static readonly CENTER: number = 0
     public static readonly MIN: number = -360
     public static readonly MAX: number = 360
+    public static readonly TOWARDS_RIGHT = new Angle(0)
+    public static readonly TOWARDS_BOTTOM = new Angle(90)
+    public static readonly TOWARDS_LEFT = new Angle(180)
+    public static readonly TOWARDS_TOP = new Angle(270)
 
     private _value: number
 

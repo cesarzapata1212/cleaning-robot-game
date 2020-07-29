@@ -1,5 +1,6 @@
 import * as PIXI from 'pixi.js'
 import { Robot, Angle, Position } from './Robot'
+import { Level, Rectangle } from './Level'
 
 const Application = PIXI.Application
 const Sprite = PIXI.Sprite
@@ -8,7 +9,7 @@ const Text = PIXI.Text
 let state: Function
 let speedLabel: PIXI.Text
 let robotPositionLabel: PIXI.Text
-let robot: PixiRobot
+let robotSprite: PixiRobot
 
 const app = new Application({
 	width: window.innerWidth,
@@ -24,11 +25,13 @@ document.body.appendChild(app.view) // Create Canvas tag in the body
 
 // Load the logo
 loader
-	.add('./assets/logo.png')
+	.add('./assets/robot.png')
 	.load(setup)
 
 function setup(): void {
-	robot = new PixiRobot(new Robot(new Position(150, 150)))
+	let robot = new Robot(new Position(200, 200))
+	robot.setLevel(new Level(new Rectangle(app.view.width, app.view.height)))
+	robotSprite = new PixiRobot(robot)
 
 	speedLabel = new Text("Speed: 0")
 	speedLabel.x = 25
@@ -51,16 +54,8 @@ function gameLoop(delta: number) {
 }
 
 function play(delta: number) {
-
-	robot.onObstacleDetected()
-
-	if (robot.isStuck()) {
-		// state = gameOver
-	}
-
-	robot.move()
-
-	robotPositionLabel.text = `Position: X=${robot.x}, Y=${robot.y}`
+	robotSprite.move()
+	robotPositionLabel.text = `Position: X=${robotSprite.x}, Y=${robotSprite.y}`
 }
 
 export class PixiRobot {
@@ -70,37 +65,33 @@ export class PixiRobot {
 
 	constructor(robot: Robot) {
 		this._robot = robot
-		this._sprite = Sprite.from(resources['./assets/logo.png'].texture)
+		this._robot.onObstacleDetected(this.changeDirection.bind(this))
+
+		this._sprite = Sprite.from(resources['./assets/robot.png'].texture)
 		this._sprite.anchor.set(0.5)
 		this._sprite.x = robot.x
 		this._sprite.y = robot.y
+		this._sprite.width = 100
+		this._sprite.height = 100
+		this._sprite.angle = robot.direction.degrees()
 		app.stage.addChild(this._sprite)
 	}
 
-	onObstacleDetected(): void {
-		if ((this._sprite.x > (app.screen.width - this._sprite.width) || this._sprite.x < 0) ||
-			(this._sprite.y > (app.screen.height - this._sprite.height) || this._sprite.y < 0)) {
-			this.changeDirection();
-			this._robot
-		}
-	}
-
 	changeDirection(): void {
-		if (this._robot.direction.degrees() + 90 > Angle.MAX.) {
-			this._robot.changeDirection(new Angle(0))
-		} else {
-			this._robot.direction.add(90)
+		let randomAngle = Math.floor(Math.random() * Math.floor(360))
+
+		if (this._robot.direction.degrees() > 0) {
+			randomAngle = randomAngle * -1
 		}
+
+		this._robot.direction = new Angle(randomAngle)
+		this._sprite.angle = this._robot.direction.degrees()
 	}
 
 	move(): void {
 		this._robot.move()
 		this._sprite.x = this._robot.x
 		this._sprite.y = this._robot.y
-	}
-
-	isStuck(): boolean {
-		return false
 	}
 
 	get x(): number {

@@ -31,7 +31,8 @@
     "@pixi/core": "^5.0.4",
     "@pixi/loaders": "^5.0.4",
     "@pixi/sprite": "^5.0.4",
-    "@pixi/ticker": "^5.0.4"
+    "@pixi/ticker": "^5.0.4",
+    "intersects": "^2.7.2"
   },
   "jest": {
     "transform": {
