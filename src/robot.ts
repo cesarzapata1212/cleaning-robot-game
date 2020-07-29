@@ -1,6 +1,5 @@
-let Intersects = require('intersects')
-
-import { Level, LevelObject, Rectangle } from './Level'
+import { IntersectsExtensions } from './IntersectsExtensions'
+import { Level, LevelObject } from './Level'
 
 
 export class Robot implements LevelObject {
@@ -8,9 +7,9 @@ export class Robot implements LevelObject {
     private _position: Position
     private _direction: Angle
     private _speed: number
+    private _size: number
     private _level?: Level
     private _onObstacleDetected?: Function
-    private _size: number
 
     private readonly STOPPED_SPEED = 0
     private readonly DEFAULT_SPEED = 5
@@ -30,60 +29,33 @@ export class Robot implements LevelObject {
         this._onObstacleDetected = fun
     }
 
-    changeDirection(angle: Angle): void {
-        this._direction = angle
-    }
-
     move(): void {
         this._speed = this.DEFAULT_SPEED
 
         if (this.isInCollisionCourse()) {
             this._onObstacleDetected?.()
+            this.stop()
         } else {
             this._position.x = this.nextPositionX()
             this._position.y = this.nextPositionY()
         }
     }
 
-    radius() {
+    radius(): number {
         return this._size / 2
+    }
+
+    stop(): void {
+        this._speed = this.STOPPED_SPEED
     }
 
     private isInCollisionCourse(): boolean {
         if (this._level) {
-
             let points = this._level.shape.points()
-
-            for (let i = 0; i < points.length - 1; i++) {
-                const point = points[i];
-                const nexxtPoint = points[i + 1];
-                let x1 = point.x,
-                    y1 = point.y,
-                    x2 = nexxtPoint.x,
-                    y2 = nexxtPoint.y,
-                    xc = this.nextPositionX(),
-                    yc = this.nextPositionY(),
-                    rc = this.radius()
-
-                if (Intersects.circleLine(xc, yc, rc, x1, y1, x2, y2)) {
-                    return true;
-                }
-            }
-
-            let firstNode = points[0]
-            let closingNode = points[points.length - 1]
-            let x1 = firstNode.x,
-            y1 = firstNode.y,
-            x2 = closingNode.x,
-            y2 = closingNode.y,
-            xc = this.nextPositionX(),
-            yc = this.nextPositionY(),
-            rc = this.radius()
-
-            if (Intersects.circleLine(xc, yc, rc, x1, y1, x2, y2)) {
-                return true;
-            }
-
+            let xc = this.nextPositionX()
+            let yc = this.nextPositionY()
+            let rc = this.radius()
+            return IntersectsExtensions.polygonOutlineCircle(points, xc, yc, rc)
         }
 
         return false
@@ -128,7 +100,6 @@ export class Robot implements LevelObject {
     set position(position: Position) {
         this._position = position
     }
-
 }
 
 export class Position {
@@ -156,7 +127,6 @@ export class Position {
     set y(y: number) {
         this._y = y
     }
-
 }
 
 export class Angle {

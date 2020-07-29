@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals'
-
 import { Robot, Position, Angle, AngleValueError } from '../src/Robot'
 import { Level, Rectangle } from '../src/Level'
 
@@ -30,16 +29,34 @@ describe('robot module', () => {
             expect(robot.direction).toEqual(new Angle(90))
         })
 
-        test('should increase speed when move is called', () => {
+        test('stop', () => {
             let robot = new Robot()
-            expect(robot.speed).toEqual(0)
-
             robot.move()
-
             expect(robot.speed).toEqual(5)
+
+            robot.stop()
+
+            expect(robot.speed).toEqual(0)
+        });
+
+        test('radius', () => {
+            let robot = new Robot()
+            robot.size = 100
+            expect(robot.radius()).toEqual(50)
+            robot.size = 50
+            expect(robot.radius()).toEqual(25)
         });
 
         describe('move', () => {
+            test('should increase speed when move is called', () => {
+                let robot = new Robot()
+                expect(robot.speed).toEqual(0)
+
+                robot.move()
+
+                expect(robot.speed).toEqual(5)
+            });
+
             test('should change pivot X when moving forward (Angle=0)', () => {
                 let robot = new Robot(new Position(0, 0), new Angle(Angle.CENTER))
 
@@ -67,7 +84,7 @@ describe('robot module', () => {
                 expect(robot.y).toEqual(3.55)
             });
 
-            test('should not change position when obstacle is detected', () => {
+            test('should not change position when obstacle is detected and stop moving', () => {
                 let level = new Level(new Rectangle(300, 400))
                 let robot = new Robot(new Position(299, 399), new Angle(45))
                 level.addObject(robot)
@@ -79,6 +96,7 @@ describe('robot module', () => {
                 expect(expected).toHaveBeenCalled()
                 expect(robot.x).toEqual(299)
                 expect(robot.y).toEqual(399)
+                expect(robot.speed).toEqual(0)
             });
 
             describe('collision detection', () => {
