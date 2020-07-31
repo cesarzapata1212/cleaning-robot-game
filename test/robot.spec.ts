@@ -155,6 +155,10 @@ describe('robot module', () => {
                 });
             });
         });
+
+        // clean
+
+        // baterry count
     })
 
     describe('Position', () => {

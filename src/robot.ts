@@ -93,6 +93,10 @@ export class Robot implements LevelObject {
         this._direction = direction
     }
 
+    get size(): number {
+        return this._size
+    }
+
     set size(size: number) {
         this._size = size
     }

@@ -7,7 +7,7 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome against localhost",
+            "name": "Start",
             "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}",
             "sourceMapPathOverrides": {
@@ -19,7 +19,7 @@
             }
           },
           {
-            "name": "Debug Jest Tests",
+            "name": "Test",
             "type": "node",
             "request": "launch",
             "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest", "--runInBand", "--watch"],
