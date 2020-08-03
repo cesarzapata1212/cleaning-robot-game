@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals'
-import { Robot, Position, Angle, AngleValueError } from '../src/Robot'
+import { Robot, Position, Angle, AngleValueError, InsufficientBatteryError } from '../src/Robot'
 import { Level, Rectangle } from '../src/Level'
 
 
@@ -22,7 +22,7 @@ describe('robot module', () => {
             let position = new Position(1, 1)
             let direction = new Angle(90)
 
-            let robot = new Robot(position, direction)
+            let robot = new Robot({ position, direction })
 
             expect(robot.x).toEqual(position.x)
             expect(robot.y).toEqual(position.y)
@@ -58,7 +58,7 @@ describe('robot module', () => {
             });
 
             test('should change pivot X when moving forward (Angle=0)', () => {
-                let robot = new Robot(new Position(0, 0), new Angle(Angle.CENTER))
+                let robot = new Robot({ direction: new Angle(Angle.CENTER) })
 
                 robot.move()
 
@@ -67,7 +67,7 @@ describe('robot module', () => {
             });
 
             test('should change pivot Y when moving at 90 degrees angle', () => {
-                let robot = new Robot(new Position(0, 0), new Angle(90))
+                let robot = new Robot({ direction: new Angle(90) })
 
                 robot.move()
 
@@ -76,7 +76,7 @@ describe('robot module', () => {
             });
 
             test('should change pivot X and Y when moving in a diagonal', () => {
-                let robot = new Robot(new Position(0, 0), new Angle(45))
+                let robot = new Robot({ direction: new Angle(45) })
 
                 robot.move()
 
@@ -86,7 +86,10 @@ describe('robot module', () => {
 
             test('should not change position when obstacle is detected and stop moving', () => {
                 let level = new Level(new Rectangle(300, 400))
-                let robot = new Robot(new Position(299, 399), new Angle(45))
+                let robot = new Robot({
+                    position: new Position(299, 399),
+                    direction: new Angle(45)
+                })
                 level.addObject(robot)
                 let expected = jest.fn()
                 robot.onObstacleDetected(expected)
@@ -120,7 +123,7 @@ describe('robot module', () => {
 
                 it('should detect right wall', () => {
                     robot.position = new Position(width - radiusOutline, centerHeight)
-                    robot.direction = Angle.TOWARDS_RIGHT
+                    robot.changeDirection(Angle.TOWARDS_RIGHT)
 
                     robot.move()
 
@@ -129,7 +132,7 @@ describe('robot module', () => {
 
                 it('should detect bottom wall', () => {
                     robot.position = new Position(centerWidth, height - radiusOutline)
-                    robot.direction = Angle.TOWARDS_BOTTOM
+                    robot.changeDirection(Angle.TOWARDS_BOTTOM)
 
                     robot.move()
 
@@ -138,7 +141,7 @@ describe('robot module', () => {
 
                 it('should detect left wall', () => {
                     robot.position = new Position(radiusOutline, centerHeight)
-                    robot.direction = Angle.TOWARDS_LEFT
+                    robot.changeDirection(Angle.TOWARDS_LEFT)
 
                     robot.move()
 
@@ -147,7 +150,7 @@ describe('robot module', () => {
 
                 test('should detect top wall', () => {
                     robot.position = new Position(centerWidth, radiusOutline)
-                    robot.direction = Angle.TOWARDS_TOP
+                    robot.changeDirection(Angle.TOWARDS_TOP)
 
                     robot.move()
 
@@ -156,9 +159,63 @@ describe('robot module', () => {
             });
         });
 
-        // clean
+        describe('batteryIndicator', () => {
+            test('should set a default value of 10000', () => {
+                expect(new Robot().batteryIndicator).toEqual(10000)
+            });
 
-        // baterry count
+            test('should use batery when moving', () => {
+                let robot = new Robot()
+
+                robot.move()
+                expect(robot.batteryIndicator).toEqual(9999)
+
+                robot.move()
+                expect(robot.batteryIndicator).toEqual(9998)
+            });
+
+            test('should use baterry when changing direction', () => {
+                let robot = new Robot()
+
+                robot.changeDirection(new Angle())
+                expect(robot.batteryIndicator).toEqual(9999)
+
+                robot.changeDirection(new Angle())
+                expect(robot.batteryIndicator).toEqual(9998)
+            });
+
+            test('should throw error when baterry fully depleted', () => {
+                let robot = new Robot({ baterry: 1 })
+                robot.move()
+                expect(() => robot.move()).toThrow(new InsufficientBatteryError())
+
+                robot = new Robot({ baterry: 1 })
+                robot.changeDirection(new Angle())
+                expect(() => robot.move()).toThrow(new InsufficientBatteryError())
+
+                robot = new Robot({ baterry: 0 })
+                expect(() => robot.move()).toThrow(new InsufficientBatteryError())
+
+                robot = new Robot({ baterry: -1 })
+                expect(() => robot.move()).toThrow(new InsufficientBatteryError())
+            });
+
+
+
+            // batery should not be lowered when collision detected
+        });
+
+        describe('changeDirection', () => {
+            test('should set new direction', () => {
+                let robot = new Robot({ direction: new Angle(0) })
+
+                robot.changeDirection(new Angle(1))
+                expect(robot.direction).toEqual(new Angle(1))
+
+                robot.changeDirection(new Angle(2))
+                expect(robot.direction).toEqual(new Angle(2))
+            });
+        });
     })
 
     describe('Position', () => {

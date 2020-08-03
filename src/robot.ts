@@ -8,17 +8,25 @@ export class Robot implements LevelObject {
     private _direction: Angle
     private _speed: number
     private _size: number
+    private _batteryIndicator: number
     private _level?: Level
     private _onObstacleDetected?: Function
 
     private readonly STOPPED_SPEED = 0
-    private readonly DEFAULT_SPEED = 5
+    private readonly MOVING_SPEED = 5
+    private readonly DEFAULT_SIZE = 100
+    private readonly DEFAULT_BATTERY = 10000
 
-    constructor(position?: Position, direction?: Angle) {
-        this._position = position || new Position(0, 0)
-        this._direction = direction || new Angle(0)
+    constructor(options?: {
+        position?: Position,
+        direction?: Angle,
+        baterry?: number
+    }) {
+        this._position = options?.position || new Position(0, 0)
+        this._direction = options?.direction || new Angle(0)
         this._speed = this.STOPPED_SPEED
-        this._size = 100
+        this._size = this.DEFAULT_SIZE
+        this._batteryIndicator = options?.baterry !== undefined ? options.baterry : this.DEFAULT_BATTERY
     }
 
     setLevel(level: Level): void {
@@ -30,7 +38,7 @@ export class Robot implements LevelObject {
     }
 
     move(): void {
-        this._speed = this.DEFAULT_SPEED
+        this._speed = this.MOVING_SPEED
 
         if (this.isInCollisionCourse()) {
             this._onObstacleDetected?.()
@@ -39,6 +47,13 @@ export class Robot implements LevelObject {
             this._position.x = this.nextPositionX()
             this._position.y = this.nextPositionY()
         }
+
+        this.useBaterry()
+    }
+
+    changeDirection(direction: Angle) {
+        this._direction = direction
+        this.useBaterry()
     }
 
     radius(): number {
@@ -47,6 +62,13 @@ export class Robot implements LevelObject {
 
     stop(): void {
         this._speed = this.STOPPED_SPEED
+    }
+
+    private useBaterry() {
+        if (this._batteryIndicator < 1) {
+            throw new InsufficientBatteryError();
+        }
+        this._batteryIndicator--
     }
 
     private isInCollisionCourse(): boolean {
@@ -89,10 +111,6 @@ export class Robot implements LevelObject {
         return this._direction
     }
 
-    set direction(direction: Angle) {
-        this._direction = direction
-    }
-
     get size(): number {
         return this._size
     }
@@ -103,6 +121,10 @@ export class Robot implements LevelObject {
 
     set position(position: Position) {
         this._position = position
+    }
+
+    get batteryIndicator() {
+        return this._batteryIndicator
     }
 }
 
@@ -176,5 +198,12 @@ export class AngleValueError extends Error {
 
     constructor(value: number) {
         super(`Invalid angle provided ${value.toString()}`)
+    }
+}
+
+export class InsufficientBatteryError extends Error {
+
+    constructor() {
+        super('Insufficient Battery')
     }
 }

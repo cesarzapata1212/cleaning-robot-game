@@ -53,7 +53,7 @@ function setup(): void {
 	cleanBackground.pivot.x = CENTER_WIDTH
 	cleanBackground.pivot.y = CENTER_HEIGHT
 
-	let robot = new Robot(new Position(200, 200))
+	let robot = new Robot({ position: new Position(200, 200) })
 	robot.setLevel(new Level(new Rectangle(WIDTH, HEIGHT)))
 	robotSprite = new PixiRobot(robot, cleanBackground)
 
