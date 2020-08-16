@@ -13,9 +13,8 @@ const CENTER_WIDTH = WIDTH / 2
 const CENTER_HEIGHT = HEIGHT / 2
 
 let state: Function
-let speedLabel: PIXI.Text
-let robotPositionLabel: PIXI.Text
 let robotSprite: PixiRobot
+let healthBar: HealthBar
 
 const app = new Application({
 	width: WIDTH,
@@ -57,17 +56,8 @@ function setup(): void {
 	robot.setLevel(new Level(new Rectangle(WIDTH, HEIGHT)))
 	robotSprite = new PixiRobot(robot, cleanBackground)
 
-	speedLabel = new Text("Speed: 0")
-	speedLabel.x = 25
-	speedLabel.y = 25
-	speedLabel.style.fill = "white"
-	app.stage.addChild(speedLabel)
-
-	robotPositionLabel = new Text("Position: X=0, Y=0")
-	robotPositionLabel.x = 25
-	robotPositionLabel.y = 55
-	robotPositionLabel.style.fill = "white"
-	app.stage.addChild(robotPositionLabel)
+	healthBar = new HealthBar()
+	app.stage.addChild(healthBar)
 
 	state = play
 	app.ticker.add(gameLoop)
@@ -79,7 +69,8 @@ function gameLoop(delta: number) {
 
 function play(delta: number) {
 	robotSprite.move()
-	robotPositionLabel.text = `Position: X=${robotSprite.x}, Y=${robotSprite.y}`
+	let batteryLife: number = Math.round(robotSprite.battery / 100)
+	healthBar.label = `${batteryLife.toString()}%`
 }
 
 export class PixiRobot {
@@ -123,8 +114,7 @@ export class PixiRobot {
 		if (this._robot.direction.degrees() > 0) {
 			randomAngle = randomAngle * -1
 		}
-
-		this._robot.direction = new Angle(randomAngle)
+		this._robot.changeDirection(new Angle(randomAngle))
 		this._sprite.angle = this._robot.direction.degrees()
 	}
 
@@ -148,4 +138,49 @@ export class PixiRobot {
 	get sprite(): PIXI.Sprite {
 		return this._sprite
 	}
+
+	get battery(): number {
+		return this._robot.batteryIndicator
+	}
+}
+
+class HealthBar extends PIXI.Container {
+
+	private readonly WIDTH = 150
+	private readonly HEIGHT = 25
+
+	private _outerBar: PIXI.Graphics
+	private _innerBar: PIXI.Graphics
+	private _label: PIXI.Text
+
+	constructor() {
+		super()
+		this.position.set(50, 50)
+
+		this._innerBar = new PIXI.Graphics();
+		this._innerBar.beginFill(0x000000);
+		this._innerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
+		this._innerBar.endFill();
+		this.addChild(this._innerBar);
+
+		this._outerBar = new PIXI.Graphics();
+		this._outerBar.beginFill(0xFF3300);
+		this._outerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
+		this._outerBar.endFill();
+		this.addChild(this._outerBar);
+
+		this._label = new Text("0%", {
+			fontFamily: 'Arial',
+			fontSize: '20px',
+			fill: 0xffffff,
+			align: 'center'
+		})
+		this._label.position.x = 5
+		this.addChild(this._label)
+	}
+
+	public set label(text: string) {
+		this._label.text = text;
+	}
+
 }

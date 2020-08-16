@@ -10,7 +10,7 @@ export class Robot implements LevelObject {
     private _size: number
     private _batteryIndicator: number
     private _level?: Level
-    private _onObstacleDetected?: Function
+    private _collisionResponse?: Function
 
     private readonly STOPPED_SPEED = 0
     private readonly MOVING_SPEED = 5
@@ -20,13 +20,13 @@ export class Robot implements LevelObject {
     constructor(options?: {
         position?: Position,
         direction?: Angle,
-        baterry?: number
+        battery?: number
     }) {
         this._position = options?.position || new Position(0, 0)
         this._direction = options?.direction || new Angle(0)
         this._speed = this.STOPPED_SPEED
         this._size = this.DEFAULT_SIZE
-        this._batteryIndicator = options?.baterry !== undefined ? options.baterry : this.DEFAULT_BATTERY
+        this._batteryIndicator = options?.battery !== undefined ? options.battery : this.DEFAULT_BATTERY
     }
 
     setLevel(level: Level): void {
@@ -34,26 +34,25 @@ export class Robot implements LevelObject {
     }
 
     onObstacleDetected(fun: Function): void {
-        this._onObstacleDetected = fun
+        this._collisionResponse = fun
     }
 
     move(): void {
         this._speed = this.MOVING_SPEED
 
         if (this.isInCollisionCourse()) {
-            this._onObstacleDetected?.()
+            this._collisionResponse?.()
             this.stop()
         } else {
+            this.usebattery()
             this._position.x = this.nextPositionX()
             this._position.y = this.nextPositionY()
         }
-
-        this.useBaterry()
     }
 
     changeDirection(direction: Angle) {
         this._direction = direction
-        this.useBaterry()
+        this.usebattery()
     }
 
     radius(): number {
@@ -64,7 +63,7 @@ export class Robot implements LevelObject {
         this._speed = this.STOPPED_SPEED
     }
 
-    private useBaterry() {
+    private usebattery() {
         if (this._batteryIndicator < 1) {
             throw new InsufficientBatteryError();
         }

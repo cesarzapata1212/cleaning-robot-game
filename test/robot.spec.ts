@@ -174,7 +174,7 @@ describe('robot module', () => {
                 expect(robot.batteryIndicator).toEqual(9998)
             });
 
-            test('should use baterry when changing direction', () => {
+            test('should use battery when changing direction', () => {
                 let robot = new Robot()
 
                 robot.changeDirection(new Angle())
@@ -184,25 +184,42 @@ describe('robot module', () => {
                 expect(robot.batteryIndicator).toEqual(9998)
             });
 
-            test('should throw error when baterry fully depleted', () => {
-                let robot = new Robot({ baterry: 1 })
+            test('should throw error when battery fully depleted', () => {
+                let robot = new Robot({ battery: 1 })
                 robot.move()
                 expect(() => robot.move()).toThrow(new InsufficientBatteryError())
 
-                robot = new Robot({ baterry: 1 })
+                robot = new Robot({ battery: 1 })
                 robot.changeDirection(new Angle())
                 expect(() => robot.move()).toThrow(new InsufficientBatteryError())
 
-                robot = new Robot({ baterry: 0 })
+                robot = new Robot({ battery: 0 })
                 expect(() => robot.move()).toThrow(new InsufficientBatteryError())
 
-                robot = new Robot({ baterry: -1 })
+                robot = new Robot({ battery: -1 })
                 expect(() => robot.move()).toThrow(new InsufficientBatteryError())
             });
 
+            test('should not change position when battery is empty', () => {
+                let robot = new Robot({ battery: 0 })
 
+                try { robot.move() } catch (error) { }
 
-            // batery should not be lowered when collision detected
+                expect(robot.x).toBe(0)
+                expect(robot.y).toBe(0)
+            });
+
+            test('should not use battery when collision is detected', () => {
+                const width = 800
+                const height = 600
+                let level = new Level(new Rectangle(width, height))
+                let robot = new Robot({ battery: 10, position: new Position(799, 300) })
+                level.addObject(robot)
+
+                robot.move()
+
+                expect(robot.batteryIndicator).toBe(10)
+            });
         });
 
         describe('changeDirection', () => {
