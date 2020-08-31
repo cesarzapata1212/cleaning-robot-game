@@ -38,11 +38,18 @@ export class Robot implements LevelObject {
     }
 
     move(): void {
-        this._speed = this.MOVING_SPEED
+        if (this._speed === this.STOPPED_SPEED) {
+            this._speed = this.MOVING_SPEED
+        }
 
         if (this.isInCollisionCourse()) {
-            this._collisionResponse?.()
-            this.stop()
+            this._speed = 1
+            if (this.isInCollisionCourse()) {
+                this._collisionResponse?.()
+                this.stop()
+            } else {
+                this.move()
+            }
         } else {
             this.usebattery()
             this._position.x = this.nextPositionX()

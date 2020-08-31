@@ -5,16 +5,14 @@ import { Level, Rectangle } from '../src/Level'
 
 describe('robot module', () => {
     describe('Robot', () => {
-        test('should be defined', () => {
-            expect(Robot).toBeDefined();
-        })
-
         test('should set defaults', () => {
             let robot = new Robot()
 
             expect(robot.x).toEqual(0)
             expect(robot.y).toEqual(0)
             expect(robot.speed).toEqual(0)
+            expect(robot.size).toEqual(100)
+            expect(robot.batteryIndicator).toEqual(10000)
             expect(robot.direction).toEqual(new Angle(0))
         });
 
@@ -156,6 +154,17 @@ describe('robot module', () => {
 
                     expect(expected).toHaveBeenCalled()
                 });
+
+                it('should reduce speed when in collision course', () => {
+                    let oneMoveAwayFromHittingTheWall = width - 5 - robot.radius()
+                    robot.position = new Position(oneMoveAwayFromHittingTheWall, centerHeight)
+
+                    robot.move()
+
+                    expect(robot.speed).toEqual(1)
+                });
+
+                // TODO bug for when the drone is close to the wall slows down speed.
             });
         });
 
