@@ -1,3 +1,5 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import * as PIXI from 'pixi.js'
 import { Robot, Angle, Position } from './Robot'
 import { Level, Rectangle } from './Level'
@@ -7,8 +9,10 @@ const Sprite = PIXI.Sprite
 const Text = PIXI.Text
 const Graphics = PIXI.Graphics
 
-const WIDTH = window.innerWidth
-const HEIGHT = window.innerHeight
+// const WIDTH = window.innerWidth
+// const HEIGHT = window.innerHeight
+const WIDTH = 1024
+const HEIGHT = 600
 const CENTER_WIDTH = WIDTH / 2
 const CENTER_HEIGHT = HEIGHT / 2
 
@@ -25,8 +29,8 @@ const loader = app.loader
 const resources = loader.resources
 
 app.renderer.backgroundColor = 0x2c3e50
-app.renderer.resize(window.innerWidth, window.innerHeight)
-document.body.appendChild(app.view) // Create Canvas tag in the body
+app.renderer.resize(WIDTH, HEIGHT)
+document.getElementById("game-container")?.appendChild(app.view)
 
 // Load the logo
 loader
