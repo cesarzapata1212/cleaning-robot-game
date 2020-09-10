@@ -1,4 +1,9 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css'
+
+import CodeMirror from "codemirror";
+import "codemirror/lib/codemirror.css";
+import '../build/assets/styles/vscode-dark.css'
+import "codemirror/mode/javascript/javascript.js";
 
 import * as PIXI from 'pixi.js'
 import { Robot, Angle, Position } from './Robot'
@@ -9,8 +14,6 @@ const Sprite = PIXI.Sprite
 const Text = PIXI.Text
 const Graphics = PIXI.Graphics
 
-// const WIDTH = window.innerWidth
-// const HEIGHT = window.innerHeight
 const WIDTH = 1024
 const HEIGHT = 600
 const CENTER_WIDTH = WIDTH / 2
@@ -31,6 +34,21 @@ const resources = loader.resources
 app.renderer.backgroundColor = 0x2c3e50
 app.renderer.resize(WIDTH, HEIGHT)
 document.getElementById("game-container")?.appendChild(app.view)
+
+const config: CodeMirror.EditorConfiguration = {
+	tabSize: 3,
+	lineNumbers: true,
+	mode: 'javascript',
+	theme: 'vscode-dark'
+};
+
+const textArea = document.getElementById("code-editor") as HTMLTextAreaElement;
+textArea.value = `{
+	onObstacleDetected: function(robot) {
+		// your code here
+	}
+}`
+const cm = CodeMirror.fromTextArea(textArea, config)
 
 // Load the logo
 loader
