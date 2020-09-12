@@ -1,17 +1,15 @@
 import 'bootstrap/dist/css/bootstrap.min.css'
-
-import CodeMirror from "codemirror";
 import "codemirror/lib/codemirror.css";
 import '../build/assets/styles/vscode-dark.css'
 import "codemirror/mode/javascript/javascript.js";
 
 import * as PIXI from 'pixi.js'
-import { Robot, Angle, Position } from './Robot'
+import { Robot, Position } from './Robot'
 import { Level, Rectangle } from './Level'
+import CodeEditor from './CodeEditor'
+import { PixiRobot, HealthBar } from './UiComponents';
 
 const Application = PIXI.Application
-const Sprite = PIXI.Sprite
-const Text = PIXI.Text
 const Graphics = PIXI.Graphics
 
 const WIDTH = 1024
@@ -28,27 +26,13 @@ const app = new Application({
 	height: HEIGHT,
 	forceCanvas: true
 })
-const loader = app.loader
-const resources = loader.resources
+const loader: PIXI.Loader = app.loader
 
 app.renderer.backgroundColor = 0x2c3e50
 app.renderer.resize(WIDTH, HEIGHT)
 document.getElementById("game-container")?.appendChild(app.view)
-
-const config: CodeMirror.EditorConfiguration = {
-	tabSize: 3,
-	lineNumbers: true,
-	mode: 'javascript',
-	theme: 'vscode-dark'
-};
-
 const textArea = document.getElementById("code-editor") as HTMLTextAreaElement;
-textArea.value = `{
-	onObstacleDetected: function(robot) {
-		// your code here
-	}
-}`
-const cm = CodeMirror.fromTextArea(textArea, config)
+const codeEditor = new CodeEditor(textArea);
 
 // Load the logo
 loader
@@ -76,7 +60,7 @@ function setup(): void {
 
 	let robot = new Robot({ position: new Position(200, 200) })
 	robot.setLevel(new Level(new Rectangle(WIDTH, HEIGHT)))
-	robotSprite = new PixiRobot(robot, cleanBackground)
+	robotSprite = new PixiRobot(robot, cleanBackground, app)
 
 	healthBar = new HealthBar()
 	app.stage.addChild(healthBar)
@@ -93,116 +77,4 @@ function play(delta: number) {
 	robotSprite.move()
 	let batteryLife: number = Math.round(robotSprite.battery / 100)
 	healthBar.label = `${batteryLife.toString()}%`
-}
-
-export class PixiRobot {
-
-	private _sprite: PIXI.Sprite
-	private _robot: Robot
-	private _brush: PIXI.Graphics
-	private _renderTexture: PIXI.RenderTexture
-	private _renderTextureSprite: PIXI.Sprite
-
-	constructor(robot: Robot, cleanBackground: PIXI.Graphics) {
-		this._robot = robot
-		this._robot.onObstacleDetected(this.changeDirection.bind(this))
-
-		this._sprite = Sprite.from(resources['./assets/robot.png'].texture)
-		this._sprite.anchor.set(0.5)
-		this._sprite.x = robot.x
-		this._sprite.y = robot.y
-		this._sprite.width = robot.size
-		this._sprite.height = robot.size
-		this._sprite.angle = robot.direction.degrees()
-		app.stage.addChild(this._sprite)
-
-		this._brush = new PIXI.Graphics();
-		this._brush.beginFill(0xffffff);
-		this._brush.drawCircle(0, 0, robot.radius());
-		this._brush.endFill();
-
-		this._renderTexture = PIXI.RenderTexture.create({
-			width: WIDTH,
-			height: HEIGHT
-		})
-		this._renderTextureSprite = new PIXI.Sprite(this._renderTexture)
-		app.stage.addChild(this._renderTextureSprite)
-		cleanBackground.mask = this._renderTextureSprite
-	}
-
-	changeDirection(): void {
-		let randomAngle = Math.floor(Math.random() * Math.floor(360))
-
-		if (this._robot.direction.degrees() > 0) {
-			randomAngle = randomAngle * -1
-		}
-		this._robot.changeDirection(new Angle(randomAngle))
-		this._sprite.angle = this._robot.direction.degrees()
-	}
-
-	move(): void {
-		this._robot.move()
-		this._sprite.x = this._robot.x
-		this._sprite.y = this._robot.y
-		this._brush.position.x = this._robot.x
-		this._brush.position.y = this._robot.y
-		app.renderer.render(this._brush, this._renderTexture, false, undefined, false)
-	}
-
-	get x(): number {
-		return this._robot.x
-	}
-
-	get y(): number {
-		return this._robot.y
-	}
-
-	get sprite(): PIXI.Sprite {
-		return this._sprite
-	}
-
-	get battery(): number {
-		return this._robot.batteryIndicator
-	}
-}
-
-class HealthBar extends PIXI.Container {
-
-	private readonly WIDTH = 150
-	private readonly HEIGHT = 25
-
-	private _outerBar: PIXI.Graphics
-	private _innerBar: PIXI.Graphics
-	private _label: PIXI.Text
-
-	constructor() {
-		super()
-		this.position.set(50, 50)
-
-		this._innerBar = new PIXI.Graphics();
-		this._innerBar.beginFill(0x000000);
-		this._innerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
-		this._innerBar.endFill();
-		this.addChild(this._innerBar);
-
-		this._outerBar = new PIXI.Graphics();
-		this._outerBar.beginFill(0xFF3300);
-		this._outerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
-		this._outerBar.endFill();
-		this.addChild(this._outerBar);
-
-		this._label = new Text("0%", {
-			fontFamily: 'Arial',
-			fontSize: '20px',
-			fill: 0xffffff,
-			align: 'center'
-		})
-		this._label.position.x = 5
-		this.addChild(this._label)
-	}
-
-	public set label(text: string) {
-		this._label.text = text;
-	}
-
 }
