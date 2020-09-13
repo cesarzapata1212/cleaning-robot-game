@@ -9,15 +9,18 @@ export class PixiRobot {
 
 	private _sprite: PIXI.Sprite
 	private _robot: Robot
+	private _robotApi: RobotApi
 	private _brush: PIXI.Graphics
 	private _renderTexture: PIXI.RenderTexture
 	private _renderTextureSprite: PIXI.Sprite
-    private _app: PIXI.Application
+	private _app: PIXI.Application
+	private _onObstacleDetected: Function
 
 	constructor(robot: Robot, cleanBackground: PIXI.Graphics, app: PIXI.Application) {
-        this._robot = robot
-		this._robot.onObstacleDetected(this.changeDirection.bind(this))
-        this._app = app
+		this._robot = robot
+		this._robotApi = new RobotApi(this)
+		this._app = app
+		this._onObstacleDetected = new Function()
 
 		this._sprite = Sprite.from(app.loader.resources['./assets/robot.png'].texture)
 		this._sprite.anchor.set(0.5)
@@ -36,20 +39,20 @@ export class PixiRobot {
 		this._renderTexture = PIXI.RenderTexture.create({
 			width: app.view.width,
 			height: app.view.height
-        })
-        
+		})
+
 		this._renderTextureSprite = new PIXI.Sprite(this._renderTexture)
 		app.stage.addChild(this._renderTextureSprite)
 		cleanBackground.mask = this._renderTextureSprite
 	}
 
-	changeDirection(): void {
-		let randomAngle = Math.floor(Math.random() * Math.floor(360))
+	onObstacleDetected(onObstacleDetected: Function) {
+		this._onObstacleDetected = onObstacleDetected.bind(this, this._robotApi)
+		this._robot.onObstacleDetected(this._onObstacleDetected)
+	}
 
-		if (this._robot.direction.degrees() > 0) {
-			randomAngle = randomAngle * -1
-		}
-		this._robot.changeDirection(new Angle(randomAngle))
+	changeDirection(angle: number): void {
+		this._robot.changeDirection(new Angle(angle))
 		this._sprite.angle = this._robot.direction.degrees()
 	}
 
@@ -76,6 +79,27 @@ export class PixiRobot {
 
 	get battery(): number {
 		return this._robot.batteryIndicator
+	}
+
+	get angle(): number {
+		return this._robot.direction.degrees()
+	}
+}
+
+class RobotApi {
+
+	private _robot: PixiRobot
+
+	constructor(robot: PixiRobot) {
+		this._robot = robot
+	}
+
+	public set angle(value: number) {
+		this._robot.changeDirection(value)
+	}
+
+	public get angle(): number {
+		return this._robot.angle
 	}
 }
 
