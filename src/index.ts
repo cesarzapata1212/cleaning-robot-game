@@ -7,7 +7,7 @@ import * as PIXI from 'pixi.js'
 import { Robot, Position } from './Robot'
 import { Level, Rectangle } from './Level'
 import CodeEditor from './CodeEditor'
-import { PixiRobot, HealthBar } from './UiComponents'
+import { PixiRobot, BatteryLifeBar, ProgressBar } from './UiComponents'
 
 const Application = PIXI.Application
 const Graphics = PIXI.Graphics
@@ -19,7 +19,8 @@ const CENTER_HEIGHT = HEIGHT / 2
 
 let state: Function
 let robotSprite: PixiRobot
-let healthBar: HealthBar
+let batteryLifeBar: BatteryLifeBar
+let progressBar: ProgressBar
 
 const app = new Application({
 	width: WIDTH,
@@ -67,8 +68,11 @@ function setup(): void {
 	robot.setLevel(new Level(new Rectangle(WIDTH, HEIGHT)))
 	robotSprite = new PixiRobot(robot, cleanBackground, app)
 
-	healthBar = new HealthBar()
-	app.stage.addChild(healthBar)
+	batteryLifeBar = new BatteryLifeBar()
+	app.stage.addChild(batteryLifeBar)
+
+	progressBar = new ProgressBar()
+	app.stage.addChild(progressBar)
 
 	state = waiting
 	app.ticker.add(gameLoop)
@@ -86,11 +90,25 @@ function play() {
 
 function waiting(delta: number) {
 	let batteryLife: number = Math.round(robotSprite.battery / 100)
-	healthBar.label = `${batteryLife.toString()}%`
+	batteryLifeBar.label = `${batteryLife.toString()}%`
 }
 
 function running(delta: number) {
-	robotSprite.move()
+	robotSprite.move(delta)
 	let batteryLife: number = Math.round(robotSprite.battery / 100)
-	healthBar.label = `${batteryLife.toString()}%`
+	batteryLifeBar.label = `${batteryLife.toString()}%`
+	updateProgress(delta)
+}
+
+function toSeconds(delta: number) {
+	return 1 / 60 * delta
+}
+
+let timeElapsed = 0
+function updateProgress(delta: number) {
+	timeElapsed += toSeconds(delta)
+	if (timeElapsed > 1) {
+		progressBar.label = `${robotSprite.progress().toFixed(2)}%`
+		timeElapsed = 0
+	}
 }

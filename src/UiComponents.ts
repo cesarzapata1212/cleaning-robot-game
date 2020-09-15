@@ -56,7 +56,7 @@ export class PixiRobot {
 		this._sprite.angle = this._robot.direction.degrees()
 	}
 
-	move(): void {
+	move(delta: number): void {
 		this._robot.move()
 		this._sprite.x = this._robot.x
 		this._sprite.y = this._robot.y
@@ -65,6 +65,16 @@ export class PixiRobot {
 		this._app.renderer.render(this._brush, this._renderTexture, false, undefined, false)
 	}
 
+	progress(): number {
+		var pixels = this._app.renderer.extract.pixels(this._renderTexture);
+		var count = 0;
+		for (var i = 0, len = pixels.length; i < len; i += 4) {
+			if (pixels[i] === 255) {
+				++count;
+			}
+		}
+		return (100 * count / (this._renderTexture.width * this._renderTexture.height));
+	}
 	get x(): number {
 		return this._robot.x
 	}
@@ -103,7 +113,7 @@ class RobotApi {
 	}
 }
 
-export class HealthBar extends PIXI.Container {
+export class BatteryLifeBar extends PIXI.Container {
 
 	private readonly WIDTH = 150
 	private readonly HEIGHT = 25
@@ -124,6 +134,47 @@ export class HealthBar extends PIXI.Container {
 
 		this._outerBar = new PIXI.Graphics();
 		this._outerBar.beginFill(0xFF3300);
+		this._outerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
+		this._outerBar.endFill();
+		this.addChild(this._outerBar);
+
+		this._label = new Text("0%", {
+			fontFamily: 'Arial',
+			fontSize: '20px',
+			fill: 0xffffff,
+			align: 'center'
+		})
+		this._label.position.x = 5
+		this.addChild(this._label)
+	}
+
+	public set label(text: string) {
+		this._label.text = text;
+	}
+}
+
+
+export class ProgressBar extends PIXI.Container {
+
+	private readonly WIDTH = 150
+	private readonly HEIGHT = 25
+
+	private _outerBar: PIXI.Graphics
+	private _innerBar: PIXI.Graphics
+	private _label: PIXI.Text
+
+	constructor() {
+		super()
+		this.position.set(850, 50)
+
+		this._innerBar = new PIXI.Graphics();
+		this._innerBar.beginFill(0x2a9df4);
+		this._innerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
+		this._innerBar.endFill();
+		this.addChild(this._innerBar);
+
+		this._outerBar = new PIXI.Graphics();
+		this._outerBar.beginFill(0x777777);
 		this._outerBar.drawRect(0, 0, this.WIDTH, this.HEIGHT);
 		this._outerBar.endFill();
 		this.addChild(this._outerBar);
